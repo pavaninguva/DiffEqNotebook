@@ -12,6 +12,8 @@ is the angular displacement, g is the magnitutde of the gravitational field
 and l is the length of the pendulum. We also consider the small angle 
 approximation where sin(x) ~ x for small values of x. 
 
+2. Damped Pendulum given by x'' + b
+
 
 """
 #Plotting formatting
@@ -109,5 +111,61 @@ ax4.set_xlabel(r"$t$")
 ax4.set_ylabel(r"$\theta$")
 ax4.legend()
 fig3.tight_layout()
+
+"""
+Part 2
+"""
+
+def damped (t,y,g,l,b):
+    theta = y[0]
+    thetadot = y[1]
+    #Define system of ODEs
+    dthetadt = thetadot
+    dthetadotdt = -b*thetadot -(g/l)*np.sin(theta)
+    return [dthetadt, dthetadotdt]
+
+sol_7 = solve_ivp(lambda t,x:damped(t,x,g,l,1.0),[0,4*np.pi],[np.pi/1.1,1.0],method="LSODA",dense_output=True)
+sol_8 = solve_ivp(lambda t,x:damped(t,x,g,l,8.0),[0,4*np.pi],[np.pi/1.1,1.0],method="LSODA",dense_output=True)
+sol_9 = solve_ivp(lambda t,x:damped(t,x,g,l,0.5),[0,4*np.pi],[np.pi/1.1,1.0],method="LSODA",dense_output=True)
+
+fig4 = plt.figure(num=4,figsize=(8,3))
+ax5 = fig4.add_subplot(1,1,1)
+ax5.plot(sol_9.t, sol_9.y[0],label=r"$b=0.5$")
+ax5.plot(sol_7.t, sol_7.y[0],label=r"$b=1.0$")
+ax5.plot(sol_8.t, sol_8.y[0],label=r"$b=8.0$")
+ax5.set_xlabel(r"$t$")
+ax5.set_ylabel(r"$\theta$")
+ax5.legend()
+fig4.tight_layout()
+
+
+# Animation
+# fig5 = plt.figure(num=5, figsize=(5,5))
+# ax6 = fig5.add_subplot(111,autoscale_on=False, xlim=(-1.2, 1.2), ylim=(-1.2, 1.2))
+
+# x_vals = l*np.sin(sol_8.y[0])
+# y_vals = -l*np.cos(sol_8.y[0])
+# t_vals = sol_8.t
+
+# line, = ax6.plot([],[],"-o",lw=2)
+# time_template = "time = %.2fs"
+# time_text = ax6.text(0.05,0.9,"",transform=ax6.transAxes)
+
+# def init():
+#     line.set_data([], [])
+#     time_text.set_text('')
+#     return line, time_text
+
+# def animate(i):
+#     thisx = [0, x_vals[i]]
+#     thisy = [0, y_vals[i]]
+
+#     line.set_data(thisx, thisy)
+#     time_text.set_text(time_template % (t_vals[i]))
+#     return line, time_text
+
+# ani = animation.FuncAnimation(fig5, animate,
+#                               interval= 10 ,blit=True,init_func=init)
+
 
 plt.show()
