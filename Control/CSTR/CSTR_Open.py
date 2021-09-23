@@ -13,7 +13,12 @@ different cooling water flowrates
 #Packages
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.integrate import odeint
+from scipy.integrate import solve_ivp
+
+#Plotting formatting
+plt.rcParams["text.usetex"] = True
+plt.rc('font', family='serif')
+
 
 #Constants and parameters
 Ea  = 72750     # activation energy J/mol
@@ -24,7 +29,7 @@ rho = 1000.0    # Density [g/L]
 Cp  = 0.239     # Heat capacity [J/g K]
 dHr = -5.0e4    # Enthalpy of reaction [J/mol]
 UA  = 5.0e4     # Heat transfer [J/min K]
-q = 100.0       # Flowrate [L/min]
+F = 100.0       # Flowrate [L/min]
 Cf = 1.0        # Inlet feed concentration [mol/L]
 Tf  = 300.0     # Inlet feed temperature [K]
 C0 = 0.5        # Initial concentration [mol/L]
@@ -39,47 +44,44 @@ def k(T):
     return k0*np.exp(-Ea/(R*T))
 
 #System of ODEs
-def model(X,t):
+def CSTR(t,X):
     C,T,Tc = X
-    dCdt = (q/V)*(Cf - C) - k(T)*C
-    dTdt = (q/V)*(Tf - T) + (-dHr/(rho*Cp))*k(T)*C + (UA/(rho*Cp*V))*(Tc-T)
+    dCdt = (F/V)*(Cf - C) - k(T)*C
+    dTdt = (F/V)*(Tf - T) + (-dHr/(rho*Cp))*k(T)*C + (UA/(rho*Cp*V))*(Tc-T)
     dTcdt = (qc/Vc)*(Tcf-Tc) + (UA/(rho*Cp*Vc))*(T-Tc)
 
     return [dCdt, dTdt, dTcdt]
 
 #Create a plotting function
-def plotter (t,X):
+def plotter (X):
     #First plot is for C vs t
     plt.subplot(1,2,1)
-    plt.plot(t,X[:,0])
+    plt.plot(X.t,X.y[0])
     plt.xlabel("Time/min")
-    plt.ylabel("mol/L")
+    plt.ylabel("Concentration/M")
     plt.title("Reactor Concentration")
-    plt.ylim(0,1)
+    # plt.ylim(0,1)
 
     plt.subplot(1,2,2)
-    plt.plot(t,X[:,1])
+    plt.plot(X.t,X.y[1])
     plt.xlabel("Time/min")
-    plt.ylabel("K")
+    plt.ylabel("Temperature/K")
     plt.title("Reactor Temperature")
-    plt.ylim(300,520)
+    # plt.ylim(300,520)
 
 #Run simulation
 # Initial conditions
 IC = [C0,T0,Tcf]
 
-#Time vector
-t = np.linspace(0,4.0,1000)
-
 # Vector of different qc
-qList = np.linspace(0,200,11)
+qList = np.linspace(20,200,10)
 
 #Solving model equations
-plt.figure()
+plt.figure(figsize=(10,4))
 for qc in qList:
-    X = odeint(model,IC,t)
-    plotter(t,X)
+    X = solve_ivp(CSTR,[0,4],IC,method="BDF")
+    plotter(X)
 
-plt.legend(qList)
+plt.legend(qList, ncol=2, bbox_to_anchor=(0.4,0.54))
 plt.show()
 plt.tight_layout()
