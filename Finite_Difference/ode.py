@@ -1,5 +1,5 @@
 import numpy as np
-from first_order import *
+from first_order_ode_schemes import *
 import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp
 
@@ -25,7 +25,7 @@ def rhs(x):
 f0 = 0.0
 
 #Construct mesh
-mesh = np.linspace(0,5,50)
+mesh = np.linspace(0,5,25)
 
 #Solve using Finite Differences
 
@@ -37,6 +37,11 @@ f1 = np.linalg.solve(A1,b1)
 A2,b2 = central_2(mesh,f0,rhs)
 f2 = np.linalg.solve(A2,b2)
 
+#Backward Difference 1st Order
+A3,b3 = backward_1(mesh,f0,rhs)
+f3 = np.linalg.solve(A3,b3)
+
+
 #solve ODE using scipy
 f_scipy = solve_ivp(ode,[0,5],[f0],method="RK23",rtol=1e-8)
 
@@ -47,6 +52,7 @@ ana = analytical(mesh)
 fig1 = plt.figure(num=1, figsize=(5,5))
 ax1 = fig1.add_subplot(1,1,1)
 ax1.plot(mesh,f1,label="Forward, 1st Order")
+ax1.plot(mesh,f3,label="Backward, 1st Order")
 ax1.plot(mesh,f2,label="Central, 2nd Order")
 ax1.plot(mesh,ana,label="Analytical")
 ax1.plot(f_scipy.t,f_scipy.y[0],label="Scipy")
@@ -58,10 +64,11 @@ fig1.tight_layout()
 
 # Compute MAE for different schemes
 
-Ncells = [5,10,25,50,100,200,500,1000,1500,2000,2500,5000,10000]
+Ncells = [5,10,25,50,100,200,500,1000,1500,2000,2500,5000]
 
 mae_forward = np.zeros(len(Ncells))
 mae_central = np.zeros(len(Ncells))
+mae_backward = np.zeros(len(Ncells))
 
 for i in range(len(Ncells)):
     N = Ncells[i]
@@ -80,11 +87,18 @@ for i in range(len(Ncells)):
     f2 = np.linalg.solve(A2,b2)
     mae_central[i] = abs(max(np.subtract(ana,f2),key=abs))
 
+    #Compute central soln
+    A3,b3 = backward_1(mesh,f0,rhs)
+    f3 = np.linalg.solve(A3,b3)
+    mae_backward[i] = abs(max(np.subtract(ana,f3),key=abs))
+
+
 
 #Plot MAE
 fig2 = plt.figure(num=2, figsize=(5,5))
 ax2 = fig2.add_subplot(1,1,1)
 ax2.loglog(Ncells,mae_forward,label="Forward, 1st Order")
+ax2.loglog(Ncells,mae_backward,label="Backward, 1st Order")
 ax2.loglog(Ncells,mae_central,label="Central, 2nd Order")
 ax2.legend()
 ax2.set_ylabel("MAE")

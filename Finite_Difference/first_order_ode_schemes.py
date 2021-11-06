@@ -56,3 +56,25 @@ def central_2(mesh,f0,g_x):
     b = b*dx
 
     return A,b
+
+def backward_1 (mesh, f0, g_x):
+    N = len(mesh)
+    # Construct matrix
+    A = np.zeros((N,N))
+    # Specify initial/boundary condition
+    A[0,0] = 1
+    for i in range(1,N):
+        A[i,i] = 1
+        A[i,i-1] = -1
+    #Compute dx of mesh
+    dx = np.zeros(N-1)
+    for i in range(len(mesh)-1):
+        dx[i] = mesh[i+1] - mesh[i]
+    dx = np.concatenate(([1.0],dx))
+    # Construct RHS
+    b = np.zeros(N)
+    b[0] = f0
+    b[1:N] = g_x(mesh[1:N])
+    b = b*dx
+
+    return A,b
