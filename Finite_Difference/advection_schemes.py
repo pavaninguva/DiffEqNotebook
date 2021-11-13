@@ -142,3 +142,71 @@ def implicit_upwind_1d(xrange, t_final, Ncells,u, CFL, c0_fun):
         counter += 1
     
     return c_new
+
+
+def explict_upwind_2d(xrange, yrange, t_final, Nx,Ny,u,v, CFL, c0_fun):
+    #Compute dt using CFL condition
+    dx = (xrange[1])/(Nx -1)
+    dy = (yrange[1])/(Ny -1)
+    dt = (CFL*dx)/(u)
+    print(dt)
+
+    alpha = (u*dt)/dx
+    beta = (v*dt)/dy
+
+    # Form matrix
+    A = np.zeros((Nx*Ny,Nx*Ny))
+    for j in range(Nx):
+        for k in range(Ny):
+            #Evaluate index p
+            p = j + (k-1)*Nx
+            # Build matrix
+            if j == 0:
+                A[p,p] = 1 - alpha -beta
+                A[p,p-1] = beta
+                A[p,(Nx-1)+p] = alpha
+            elif k == 0:
+                A[p,p] = 1 - alpha - beta
+                A[p,p-1] = alpha
+                A[p,p-(Ny-1)*Nx] = beta
+            else:
+                A[p,p] = 1 - alpha - beta
+                A[p,p-1] = alpha
+                A[p,p-Nx] = beta
+
+
+    # Initialize c0 and c
+    x_vals = np.linspace(xrange[0],xrange[1],Nx)
+    y_vals = np.linspace(yrange[0],yrange[1],Ny)
+    xx,yy = np.meshgrid(x_vals,y_vals)
+    c_old = c0_fun(xx,yy)
+    c_new = np.zeros(Nx*Ny)
+    
+    c_old_ = np.zeros(Nx*Ny)
+    #Reshape c_old
+    for j in range(Nx):
+        for k in range(Ny):
+            p = j + (k-1)*Nx
+            c_old_[p] = c_old[j,k]
+
+    # Perform time-stepping
+    t = 0.0
+    counter = 0
+    while t < t_final - 1e-16:
+        # Compute c_new
+        c_new = A.dot(c_old_)
+        #update c_old
+        c_old_ = c_new
+        #Update t and counter
+        t += dt
+        # print(t)
+        counter += 1
+
+    #Reshape c_new at the end
+    c_new_ = np.zeros((Nx,Ny))
+    for j in range(Nx):
+        for k in range(Ny):
+            p = j + (k-1)*Nx
+            c_new_[j,k] = c_new[p]
+    
+    return c_new_
