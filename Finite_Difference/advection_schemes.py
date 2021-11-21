@@ -159,7 +159,7 @@ def explict_upwind_2d(xrange, yrange, t_final, Nx,Ny,u,v, CFL, c0_fun):
     for j in range(Nx):
         for k in range(Ny):
             #Evaluate index p
-            p = j + (k-1)*Nx
+            p = j + (k)*Nx
             # Build matrix
             if j == 0:
                 A[p,p] = 1 - alpha -beta
@@ -186,7 +186,7 @@ def explict_upwind_2d(xrange, yrange, t_final, Nx,Ny,u,v, CFL, c0_fun):
     #Reshape c_old
     for j in range(Nx):
         for k in range(Ny):
-            p = j + (k-1)*Nx
+            p = j + (k)*Nx
             c_old_[p] = c_old[j,k]
 
     # Perform time-stepping
@@ -203,10 +203,6 @@ def explict_upwind_2d(xrange, yrange, t_final, Nx,Ny,u,v, CFL, c0_fun):
         counter += 1
 
     #Reshape c_new at the end
-    c_new_ = np.zeros((Nx,Ny))
-    for j in range(Nx):
-        for k in range(Ny):
-            p = j + (k-1)*Nx
-            c_new_[j,k] = c_new[p]
+    c_new_ = c_new.reshape(Nx,-1)
     
     return c_new_

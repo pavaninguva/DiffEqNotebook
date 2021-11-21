@@ -36,7 +36,7 @@ fig1.tight_layout()
 
 
 # Explicit upwind for 2D 
-c_vals = explict_upwind_2d([0,2],[0,2],1.0,101,101,1.0,1.0,0.5,c0_fun)
+c_vals = explict_upwind_2d([0,2],[0,2],1.5,101,101,1.0,0.0,1.0,c0_fun)
 fig2 = plt.figure(num=2,figsize=(5,4))
 ax2 = fig2.add_subplot(1,1,1)
 im2 = ax2.pcolormesh(x_vals,y_vals,c_vals, cmap="jet")
