@@ -8,16 +8,17 @@ diffusion equation given by
 """
 
 def theta_scheme(xrange, t_final, Ncells, D, Fo, theta, bcs, c0_fun):
-    # Compute dt using mesh Fo
-    dx = (xrange[1] - xrange[0])/(Ncells-1)
-    dt = ((Fo*dx**2)/D)**0.5
-
     if theta == 1:
         print("Backward Euler")
     elif theta == 0.5:
         print("Crank-Nicolson")
     elif theta == 0:
         print("Forward Euler")
+    
+    # Compute dt using mesh Fo
+    dx = (xrange[1] - xrange[0])/(Ncells-1)
+    dt = (Fo*dx**2)/D
+    print(dt)
 
     # Form matrix
     A = np.zeros((Ncells,Ncells))
@@ -64,7 +65,10 @@ def theta_scheme(xrange, t_final, Ncells, D, Fo, theta, bcs, c0_fun):
         #Compute LHS
         b = A_.dot(c_old)
         #Invert A to get c_new
-        c_new = np.linalg.solve(A,b)
+        if theta == 0:
+            c_new = b
+        else:
+            c_new = np.linalg.solve(A,b)
         #Update c_old
         c_old = c_new
         #Update t and counter
