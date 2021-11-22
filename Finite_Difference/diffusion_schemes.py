@@ -32,8 +32,8 @@ def theta_scheme(xrange, t_final, Ncells, D, Fo, theta, bcs, c0_fun):
 
         A_[0,0] = 1 -2*(1-theta)*Fo
         A_[0,1] = 2*(1-theta)*Fo
-        A[-1,-1] = 1 -2*(1-theta)*Fo
-        A[-1,-2] = 2*(1-theta)*Fo
+        A_[-1,-1] = 1 -2*(1-theta)*Fo
+        A_[-1,-2] = 2*(1-theta)*Fo
     else:
         A[0,0] = 1
         A[-1,-1] = 1
